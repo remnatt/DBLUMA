@@ -4,7 +4,7 @@
 > [!WARNING]
 >
 > **This tool can produce strikes from the Bandai team. Make sure you know what your doing before using this.**
-> **If you want to get more information join https://discord.gg/BUZ3YeTm5a**
+> **If you want to get more information join https://discord.gg/NBxTbEMznf**
 
 > [!IMPORTANT]
 >
@@ -23,4 +23,4 @@ Video Preview:
 
 > [!IMPORTANT]
 >
-> **This project is still being worked on. Join the [Discord](https://discord.gg/BUZ3YeTm5a) for more updates.**
+> **This project is still being worked on. Join the [Discord](https://discord.gg/NBxTbEMznf) for more updates.**
