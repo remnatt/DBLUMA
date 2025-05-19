@@ -145,7 +145,7 @@ def main():
     st.warning("⚠️ Character Level above 5,000 does NOT work in PvP. Max PvP level is 5,000.")
     st.info("""
     Message from Mindset:
-     DBLPS is in the works! Join https://discord.gg/xnnnMpGU8u for more info.   
+     DBLPS is in the works! Join https://discord.gg/NBxTbEMznf for more info.   
     """)
 
     uploaded_file = st.file_uploader("Upload 89bb4eb5637df3cd96c463a795005065 file", type=None)
