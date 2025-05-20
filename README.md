@@ -1,6 +1,26 @@
 # DBLUMA
 ## The ultimate DB Legends client-sided modding application
 
+
+# REPO NAVIGATION
+|  | File |
+|------|------|
+| ![EqIco_frmUnique(1)](https://github.com/user-attachments/assets/f7d8e1d0-d5d2-4b9a-bdcf-7652f82ba0ba) | [`Web-source` → click here](https://github.com/remnatt/DBLUMA/tree/main/web-source) |
+| ![EqIco_frmUnique(1)](https://github.com/user-attachments/assets/f7d8e1d0-d5d2-4b9a-bdcf-7652f82ba0ba) | [`Preview Video` → click here](https://github.com/remnatt/DBLUMA/blob/main/media/preview.webm) |
+| ![EqIco_frmUnique(1)](https://github.com/user-attachments/assets/f7d8e1d0-d5d2-4b9a-bdcf-7652f82ba0ba) | [`Patches/To fix` → click here](https://github.com/remnatt/DBLUMA/blob/main/SECURITY.md) |
+
+---
+
+## Version status
+
+| Version       | Stability  | Released |
+| ------------- | ---------- | -------- |
+| `v1.0.0`      | Stable     | ✅ Yes    |
+| `v2.0.0` | Stable | ✅ Yes    |
+| `v3.0.0`      | Not Stable (WIP)     | ❌ No     |
+
+----
+
 > [!WARNING]
 >
 > **This tool can produce strikes from the Bandai team. Make sure you know what your doing before using this.**
