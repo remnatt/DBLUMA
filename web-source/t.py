@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import streamlit as st
 from io import BytesIO
+import random
 
 # === UTILS ===
 
@@ -59,26 +60,20 @@ def parse_decrypted_json(file_bytes):
                     "Editable": val != -1
                 })
 
-    # === unitInfo_ (for arts, friendship, and level) ===
+    # === unitInfo_ ===
     unit_info = data.get("unit", {}).get("unitInfo_", [])
     for unit in unit_info:
         char_id = unit.get("id")
-
-        # Arts boost
         parsed_arts.append({
             "CharID": char_id,
             "strikeArtsBoost": unit.get("strikeArtsBoost", 0),
             "shotArtsBoost": unit.get("shotArtsBoost", 0),
             "specialArtsBoost": unit.get("specialArtsBoost", 0)
         })
-
-        # Friendship level
         parsed_friendship.append({
             "CharID": char_id,
             "friendshipLevel": unit.get("friendshipLevel", 0)
         })
-
-        # Character level
         parsed_levels.append({
             "CharID": char_id,
             "level": unit.get("level", 1)
@@ -93,121 +88,90 @@ def parse_decrypted_json(file_bytes):
         data
     )
 
+def apply_mods(json_data, max_stars, zenkai7, max_equips, max_lv_arts):
+    if max_stars:
+        for shard in json_data["item"].get("characterShards_", []):
+            if shard["characterType"] != 9000:
+                shard["count"] = 9999
 
-def update_data(original_data, edited_chars, edited_equips, edited_arts, edited_friendship, edited_levels):
-    # === Update Z Power and Awakening Z Power ===
-    for row in edited_chars.itertuples(index=False):
-        if row.Category == "Z Power":
-            for entry in original_data["item"]["characterShards_"]:
-                if entry["characterType"] == row.CharID or (row.CharID == "Shallot" and entry["characterType"] == 9000):
-                    entry["count"] = row.Value
-        elif row.Category == "Awakening Z Power":
-            for entry in original_data["item"]["characterPlentyShards_"]:
-                if entry["characterType"] == row.CharID or (row.CharID == "Shallot" and entry["characterType"] == 9000):
-                    entry["count"] = row.Value
+    if zenkai7:
+        for shard in json_data["item"].get("characterPlentyShards_", []):
+            shard["count"] = 7000
 
-    # === Update Equip Effects ===
-    for row in edited_equips.itertuples(index=False):
-        for equip in original_data["item"]["equipItems_"]:
-            if equip["equipId"] == row.equipId:
-                for ab in equip.get("ability", []):
-                    if len(ab.get("ability_effect_param", [])) > 0:
-                        try:
-                            idx = int(row.Category.replace("Equip Effect [", "").replace("]", ""))
-                            ab["ability_effect_param"][idx] = row.Value
-                        except Exception:
-                            continue
+    if max_equips:
+        for equip in json_data["item"].get("equipItems_", []):
+            for ab in equip.get("ability", []):
+                params = ab.get("ability_effect_param", [])
+                for i, val in enumerate(params):
+                    if val != -1:
+                        params[i] = random.randint(350, 500)
 
-    # === Update Arts Boosts, Friendship Levels, Character Levels ===
-    unit_info = original_data.get("unit", {}).get("unitInfo_", [])
-    for unit in unit_info:
-        for row in edited_arts.itertuples(index=False):
-            if unit["id"] == row.CharID:
-                unit["strikeArtsBoost"] = min(max(int(row.strikeArtsBoost), 0), 99)
-                unit["shotArtsBoost"] = min(max(int(row.shotArtsBoost), 0), 99)
-                unit["specialArtsBoost"] = min(max(int(row.specialArtsBoost), 0), 99)
+    if max_lv_arts:
+        for unit in json_data.get("unit", {}).get("unitInfo_", []):
+            unit["level"] = 5000
+            unit["friendshipLevel"] = 15
+            unit["strikeArtsBoost"] = 99
+            unit["shotArtsBoost"] = 99
+            unit["specialArtsBoost"] = 99
 
-        for row in edited_friendship.itertuples(index=False):
-            if unit["id"] == row.CharID:
-                unit["friendshipLevel"] = min(max(int(row.friendshipLevel), 0), 15)
-
-        for row in edited_levels.itertuples(index=False):
-            if unit["id"] == row.CharID:
-                unit["level"] = min(max(int(row.level), 1), 9999)
-
-    return original_data
+    return json_data
 
 # === MAIN APP ===
+
 
 def main():
     st.set_page_config(page_title="DBLUMA | Editor", layout="wide", page_icon="assets/icon.png")
     st.image("assets/banner.png", use_container_width=True)
-    st.warning("⚠️ Character Level above 5,000 does NOT work in PvP. Max PvP level is 5,000.")
+    st.warning("""
+    ⚠️ Do NOT use these mods in Ranked PvP. It might result in a ban. It is okay to use in Co-Op, Raids, and Friendly PvP.
+    ⚠️ Character Levels above 5,000 does NOT work in PvP. Max PvP level is 5,000.
+    """)
     st.info("""
     Message from Mindset:
-     DBLPS is in the works! Join https://discord.gg/NBxTbEMznf for more info.   
+     If you wish to continue supporting this project and any other future projects (DBLPS) please consider joing our Discord! - https://discord.gg/NBxTbEMznf
     """)
 
-    uploaded_file = st.file_uploader("Upload 89bb4eb5637df3cd96c463a795005065 file", type=None)
-    if uploaded_file:
-        if "89bb4eb5637df3cd96c463a795005065" not in uploaded_file.name:
-            st.error("Filename must contain '89bb4eb5637df3cd96c463a795005065'")
-            return
+    # --- Navigation Buttons ---
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        if st.button("Standard 89bb Modding"):
+            st.session_state.page = "modding"
+    with col2:
+        st.markdown("[Discord](https://discord.gg/NBxTbEMznf)", unsafe_allow_html=True)
 
-        file_bytes = uploaded_file.read()
-        decrypted_bytes = decrypt_file(file_bytes)
+    if "page" not in st.session_state:
+        st.session_state.page = "modding"
 
-        try:
-            char_df, equip_df, arts_df, friendship_df, level_df, json_data = parse_decrypted_json(decrypted_bytes)
-        except Exception as e:
-            st.error(f"Failed to parse file: {e}")
-            return
+    if st.session_state.page == "modding":
+        st.title("Updated to Standardized 89bb modding")
 
-        st.success("File parsed successfully! Edit the tables below:")
+        uploaded_file = st.file_uploader("Upload 89bb4eb5637df3cd96c463a795005065 file", type=None)
+        if uploaded_file:
+            if "89bb4eb5637df3cd96c463a795005065" not in uploaded_file.name:
+                st.error("Filename must contain '89bb4eb5637df3cd96c463a795005065'")
+                return
 
-        st.subheader("Character Z Powers")
-        editable_chars = char_df[char_df["Editable"] == True].copy()
-        edited_chars = st.data_editor(
-            editable_chars[["Category", "CharLabel", "CharID", "Value"]],
-            num_rows="dynamic",
-            column_config={"CharLabel": st.column_config.TextColumn("Character", disabled=True)},
-            key="char_table"
-        )
+            file_bytes = uploaded_file.read()
+            decrypted_bytes = decrypt_file(file_bytes)
 
-        st.subheader("Equip Effects")
-        editable_equips = equip_df[equip_df["Editable"] == True].copy()
-        edited_equips = st.data_editor(
-            editable_equips[["Category", "equipId", "Value"]],
-            num_rows="dynamic",
-            key="equip_table"
-        )
+            try:
+                _, _, _, _, _, json_data = parse_decrypted_json(decrypted_bytes)
+            except Exception as e:
+                st.error(f"Failed to parse file: {e}")
+                return
 
-        st.subheader("Arts Boosts")
-        edited_arts = st.data_editor(arts_df, num_rows="dynamic", key="arts_table")
+            st.markdown("### Select Mod Options")
+            max_stars = st.checkbox("Max Stars (Z Power → 9999)")
+            zenkai7 = st.checkbox("Zenkai 7 (Awakening Z Power → 7000)")
+            max_equips = st.checkbox("Max Equips (Red slots)")
+            max_lv_arts = st.checkbox("Max Levels and Arts Boosts")
 
-        st.subheader("Friendship Levels")
-        edited_friendship = st.data_editor(friendship_df, num_rows="dynamic", key="friend_table")
-
-        st.subheader("Character Levels")
-        edited_levels = st.data_editor(level_df, num_rows="dynamic", key="level_table")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if st.button("Download Edited CSVs"):
-                st.download_button("Download Character CSV", edited_chars.to_csv(index=False).encode("utf-8"), "edited_characters.csv", "text/csv")
-                st.download_button("Download Equip CSV", edited_equips.to_csv(index=False).encode("utf-8"), "edited_equips.csv", "text/csv")
-                st.download_button("Download Arts Boost CSV", edited_arts.to_csv(index=False).encode("utf-8"), "edited_arts_boosts.csv", "text/csv")
-                st.download_button("Download Friendship CSV", edited_friendship.to_csv(index=False).encode("utf-8"), "edited_friendship.csv", "text/csv")
-                st.download_button("Download Levels CSV", edited_levels.to_csv(index=False).encode("utf-8"), "edited_levels.csv", "text/csv")
-
-        with col2:
-            if st.button("Download Re-encrypted File"):
-                updated_json = update_data(json_data, edited_chars, edited_equips, edited_arts, edited_friendship, edited_levels)
+            if st.button("Modify"):
+                updated_json = apply_mods(json_data, max_stars, zenkai7, max_equips, max_lv_arts)
                 json_bytes = json.dumps(updated_json, ensure_ascii=False).encode('utf-8')
                 encrypted_bytes = encrypt_file(json_bytes)
                 buffer = BytesIO(encrypted_bytes)
-                st.download_button("Download Encrypted File", buffer, "89bb4eb5637df3cd96c463a795005065", "application/octet-stream")
+                st.download_button("Download Modified File", buffer, "89bb4eb5637df3cd96c463a795005065", "application/octet-stream")
 
 if __name__ == "__main__":
     main()
