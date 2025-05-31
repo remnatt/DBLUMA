@@ -17,7 +17,7 @@
 | ------------- | ---------- | -------- |
 | `v1.0.0`      | Stable     | ✅ Yes    |
 | `v2.0.0` | Stable | ✅ Yes    |
-| `v3.0.0`      | Not Stable (WIP)     | ❌ No     |
+| `v3.0.0`      | Possibly unstable (Still bug Checking)     | ✅ Yes     |
 
 ----
 
